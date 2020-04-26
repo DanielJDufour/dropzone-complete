@@ -5,6 +5,10 @@
   "main": "./dist/dropzone-complete.js",
   "browser": "./dist/dropzone-complete.js",
   "unpkg": "./dist/dropzone-complete.js",
+  "files": [
+    "src/index.js",
+    "dist/dropzone-complete.js"
+  ],
   "scripts": {
     "build": "npx babel src/index.js --out-file dist/dropzone-complete.js",
     "dev": "npx babel src/index.js --watch --out-file dist/dropzone-complete.js",
