@@ -1,0 +1,47 @@
+{
+  "name": "dropzone-complete",
+  "version": "0.0.0",
+  "description": "Dropzone Web Component Complete with Display of GeoTIFF, JPG, and PNG Files!",
+  "main": "./dist/dropzone-complete.js",
+  "browser": "./dist/dropzone-complete.js",
+  "unpkg": "./dist/dropzone-complete.js",
+  "scripts": {
+    "dev": "npx babel src/index.js --watch --out-file dist/dropzone-complete.js",
+    "serve": "http-server"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DanielJDufour/dropzone-complete.git"
+  },
+  "keywords": [
+    "dropzone",
+    "jpg",
+    "png",
+    "pdf",
+    "drag",
+    "drag and drop",
+    "dragndrop",
+    "drop",
+    "file",
+    "file upload",
+    "view",
+    "img",
+    "upload"
+  ],
+  "author": "Daniel J. Dufour",
+  "license": "CC0-1.0",
+  "bugs": {
+    "url": "https://github.com/DanielJDufour/dropzone-complete/issues"
+  },
+  "homepage": "https://github.com/DanielJDufour/dropzone-complete#readme",
+  "devDependencies": {
+    "@babel/cli": "^7.8.4",
+    "@babel/core": "^7.9.0",
+    "@babel/plugin-proposal-class-properties": "^7.8.3",
+    "@babel/plugin-transform-arrow-functions": "^7.8.3",
+    "@babel/plugin-transform-classes": "^7.9.5",
+    "@babel/plugin-transform-destructuring": "^7.9.5",
+    "@babel/plugin-transform-template-literals": "^7.8.3",
+    "http-server": "^0.12.1"
+  }
+}
