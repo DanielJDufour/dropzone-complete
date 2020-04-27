@@ -33,6 +33,8 @@
 
       get canvas() { return document.getElementById(this.dzid + "-canvas"); }
 
+      get iframe() { return document.getElementById(this.dzid + "-iframe"); }
+
       get img() { return document.getElementById(this.dzid + "-img"); }
 
       get input() { return document.getElementById(this.dzid + "-input"); }
@@ -55,8 +57,12 @@
                 this.wrapper.setAttribute("loaded", true);
               });
             });
-          }            
+          }
           reader.readAsArrayBuffer(file);
+        } else if (file.type === "application/pdf") {
+          reader.onloadend = () =>  this.iframe.src = reader.result;
+          this.wrapper.setAttribute("loaded", true);
+          reader.readAsDataURL(file);
         } else {
           reader.onloadend = () =>  this.img.setAttribute("src", reader.result);
           this.wrapper.setAttribute("loaded", true);            
@@ -72,7 +78,6 @@
             position: relative;
             width: 300px;
           }
-
 
           #${dzid}-input {
             height: 0;
@@ -122,7 +127,7 @@
             display: none;
           }
                 
-          #${dzid}-img, #${dzid}-canvas {
+          #${dzid}-img, #${dzid}-canvas, #${dzid}-iframe {
             left: 50%;
             position: absolute;
             top: 50%;
@@ -130,6 +135,14 @@
             width: 90%;
           }
           #${dzid}-img:not([src]) {
+            display: none;
+          }
+
+          #${dzid}-iframe {
+            height: 400px;
+            width: 100%;
+          }
+          #${dzid}-iframe:not([src]) {
             display: none;
           }
         </style>`;
@@ -149,8 +162,9 @@
                 </div>
               </div>
 
-              <img id="${dzid}-img">
-              <canvas id="${dzid}-canvas">
+              <img id="${dzid}-img"/>
+              <canvas id="${dzid}-canvas"></canvas>
+              <iframe id="${dzid}-iframe"></iframe>
             </div>
           </div>
         `;
