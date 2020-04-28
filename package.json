@@ -1,6 +1,6 @@
 {
   "name": "dropzone-complete",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Dropzone Web Component Complete with Display of GeoTIFF, JPG, and PNG Files!",
   "main": "./dist/dropzone-complete.js",
   "browser": "./dist/dropzone-complete.js",

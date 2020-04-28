@@ -18,6 +18,12 @@ npm install dropzone-complete
 <script src="https://unpkg.com/dropzone-complete"></script>
 
 <dropzone-complete></dropzone-complete>
+
+<script>
+    document.querySelector("dropzone-complete").addEventListener("change", function(event) {
+        console.log("DropZone Complete loaded file:", event.detail.file);
+    });
+</script>
 ```
 
 # contact

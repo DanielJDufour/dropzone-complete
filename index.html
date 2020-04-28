@@ -10,5 +10,10 @@
     <div style="margin: 0 auto; max-width: 300px; text-align: center;">
       <dropzone-complete></dropzone-complete>
     </div>
+    <script>
+      document.querySelector("dropzone-complete").addEventListener("change", function(event) {
+        console.log("DropZone Complete Loaded:", event);
+      });
+    </script>
   </body>
 </html>

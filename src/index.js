@@ -10,6 +10,15 @@
         this.promises = {};
       }
 
+      dispatchCustomEvent(file) {
+        this.dispatchEvent(new CustomEvent("change", {
+          bubbles: true,
+          detail: {
+            file
+          }
+        }));
+      }
+
       // fires after the element has been attached to the DOM
       connectedCallback() {
         this.render();
@@ -178,12 +187,16 @@
         this.label.ondrop = ev => {
           ev.preventDefault();
           if (ev.dataTransfer.files.length > 0) {
-            this.loadFile(ev.dataTransfer.files[0]);
+            const file = ev.dataTransfer.files[0];
+            this.loadFile(file);
+            this.dispatchCustomEvent(file);
           };
         };
 
         this.input.onchange = ev => {
-          this.loadFile(ev.target.files[0]);
+          const file = ev.target.files[0];
+          this.loadFile(file);
+          this.dispatchCustomEvent(file);
         };
       }
     }
