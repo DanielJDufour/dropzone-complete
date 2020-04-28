@@ -50,6 +50,8 @@
 
       get label() { return document.getElementById(this.dzid + "-label"); }
 
+      get textarea() { return this.querySelector("textarea"); }
+
       get wrapper() { return document.getElementById(this.dzid + "-wrapper"); }
 
 
@@ -63,6 +65,7 @@
                 this.canvas.height = georasterCanvas.height;
                 this.canvas.width = georasterCanvas.width;
                 this.canvas.getContext('2d').drawImage(georaster.toCanvas(), 0, 0);
+                this.canvas.style.display = null;
                 this.wrapper.setAttribute("loaded", true);
               });
             });
@@ -72,6 +75,13 @@
           reader.onloadend = () =>  this.iframe.src = reader.result;
           this.wrapper.setAttribute("loaded", true);
           reader.readAsDataURL(file);
+        } else if (file.type === "text/plain") {
+          reader.onloadend = () => {
+            this.textarea.value = reader.result;
+            this.textarea.style.display = null;
+          }
+          this.wrapper.setAttribute("loaded", true);
+          reader.readAsText(file);
         } else {
           reader.onloadend = () =>  this.img.setAttribute("src", reader.result);
           this.wrapper.setAttribute("loaded", true);            
@@ -110,11 +120,13 @@
 
           #${dzid} {
             background: ghostwhite;
-            cursor: pointer;
             display: inline-block;
             height: 400px;
             position: relative;
             width: 100%;
+          }
+          #${dzid}-wrapper:not([loaded=true]) #${dzid} {
+            cursor: pointer;
           }
           #${dzid}-inner {
             border: 1px dashed #673ab7;
@@ -135,7 +147,7 @@
           #${dzid}-wrapper[loaded=true] #${dzid}-inner {
             display: none;
           }
-                
+
           #${dzid}-img, #${dzid}-canvas, #${dzid}-iframe {
             left: 50%;
             position: absolute;
@@ -149,6 +161,11 @@
 
           #${dzid}-iframe {
             height: 400px;
+            width: 100%;
+          }
+          #${dzid}-textarea {
+            height: 100%;
+            resize: none;
             width: 100%;
           }
           #${dzid}-iframe:not([src]) {
@@ -171,8 +188,9 @@
                 </div>
               </div>
 
+              <textarea id="${dzid}-textarea" style="display: none" readOnly></textarea>
               <img id="${dzid}-img"/>
-              <canvas id="${dzid}-canvas"></canvas>
+              <canvas id="${dzid}-canvas" style="display: none"></canvas>
               <iframe id="${dzid}-iframe"></iframe>
             </div>
           </div>
