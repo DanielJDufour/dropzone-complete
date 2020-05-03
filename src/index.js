@@ -10,6 +10,10 @@
         this.promises = {};
       }
 
+      static get observedAttributes() {
+        return ['width'];
+      }
+
       dispatchCustomEvent(file) {
         this.dispatchEvent(new CustomEvent("change", {
           bubbles: true,
@@ -21,6 +25,10 @@
 
       // fires after the element has been attached to the DOM
       connectedCallback() {
+        let width = this.getAttribute("width");
+        if (width === null) width = 300;
+        if (!isNaN(width)) width += "px";
+        this.width = width;
         this.render();
       }
   
@@ -90,12 +98,12 @@
       }
       
       get style() {
-        const { dzid } = this;
+        const { dzid, width } = this;
         return `
         <style>
           #${dzid}-wrapper {
             position: relative;
-            width: 300px;
+            width: ${width};
           }
 
           #${dzid}-input {

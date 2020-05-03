@@ -26,5 +26,14 @@ npm install dropzone-complete
 </script>
 ```
 
+## setting width
+```html
+<dropzone-complete width=500></dropzone-complete>
+```
+or
+```html
+<dropzone-complete width="100%"></dropzone-complete>
+```
+
 # contact
 Post an issue at https://github.com/danieljdufour/issues or email the package author at daniel.j.dufour@gmail.com
