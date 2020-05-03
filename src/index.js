@@ -11,7 +11,18 @@
       }
 
       static get observedAttributes() {
-        return ['width'];
+        return ['height', 'width'];
+      }
+
+      // fires after the element has been attached to the DOM
+      connectedCallback() {
+        this.render();
+      }
+
+      attributeChangedCallback(attrName, oldVal, newVal) {
+        if (attrName === 'height' || attrName === 'width') {
+          this.render();
+        }
       }
 
       dispatchCustomEvent(file) {
@@ -23,15 +34,6 @@
         }));
       }
 
-      // fires after the element has been attached to the DOM
-      connectedCallback() {
-        let width = this.getAttribute("width");
-        if (width === null) width = 300;
-        if (!isNaN(width)) width += "px";
-        this.width = width;
-        this.render();
-      }
-  
       loadScript(url) {
         if (!this.promises[url]) {
           this.promises[url] = new Promise(resolve => {
@@ -48,15 +50,15 @@
         return this.loadScript(`https://unpkg.com/${name}`);
       }
 
-      get canvas() { return document.getElementById(this.dzid + "-canvas"); }
+      get canvas() { return this.querySelector("canvas"); }
 
-      get iframe() { return document.getElementById(this.dzid + "-iframe"); }
+      get iframe() { return this.querySelector("iframe"); }
 
-      get img() { return document.getElementById(this.dzid + "-img"); }
+      get img() { return this.querySelector("img"); }
 
-      get input() { return document.getElementById(this.dzid + "-input"); }
+      get input() { return this.querySelector("input"); }
 
-      get label() { return document.getElementById(this.dzid + "-label"); }
+      get label() { return this.querySelector("label"); }
 
       get textarea() { return this.querySelector("textarea"); }
 
@@ -98,7 +100,16 @@
       }
       
       get style() {
-        const { dzid, width } = this;
+        const { dzid } = this;
+
+        let height = this.getAttribute("height") ;
+        if (height === null) height = 400;
+        if (!isNaN(height)) height += "px";
+
+        let width = this.getAttribute("width");
+        if (width === null) width = 300;
+        if (!isNaN(width)) width += "px";
+
         return `
         <style>
           #${dzid}-wrapper {
@@ -116,7 +127,7 @@
           }        
           #${dzid}-label {
             cursor: pointer;
-            height: 400px;
+            height: ${height};
             left: 0;
             position: absolute;
             width: 100%;
@@ -129,7 +140,7 @@
           #${dzid} {
             background: ghostwhite;
             display: inline-block;
-            height: 400px;
+            height: ${height};
             position: relative;
             width: 100%;
           }
@@ -168,7 +179,7 @@
           }
 
           #${dzid}-iframe {
-            height: 400px;
+            height: ${height};
             width: 100%;
           }
           #${dzid}-textarea {
@@ -183,47 +194,51 @@
       }
   
       render() {
-        const { dzid } = this;
-        this.innerHTML = `
-          ${this.style}
-          <div id="${dzid}-wrapper" loaded="false">
-            <input id="${dzid}-input" type="file" multiple="false"/>
-            <label for="${dzid}-input" id="${dzid}-label"></label>
-            <div id="${dzid}">
-              <div id="${dzid}-inner">
-                <div id="${dzid}-mssg">
-                  Click to Choose a File<br/> or Drag One Here
+        try {
+          const { dzid } = this;
+          this.innerHTML = `
+            ${this.style}
+            <div id="${dzid}-wrapper" loaded="false">
+              <input id="${dzid}-input" type="file" multiple="false"/>
+              <label for="${dzid}-input" id="${dzid}-label"></label>
+              <div id="${dzid}">
+                <div id="${dzid}-inner">
+                  <div id="${dzid}-mssg">
+                    Click to Choose a File<br/> or Drag One Here
+                  </div>
                 </div>
+
+                <textarea id="${dzid}-textarea" style="display: none" readOnly></textarea>
+                <img id="${dzid}-img"/>
+                <canvas id="${dzid}-canvas" style="display: none"></canvas>
+                <iframe id="${dzid}-iframe"></iframe>
               </div>
-
-              <textarea id="${dzid}-textarea" style="display: none" readOnly></textarea>
-              <img id="${dzid}-img"/>
-              <canvas id="${dzid}-canvas" style="display: none"></canvas>
-              <iframe id="${dzid}-iframe"></iframe>
             </div>
-          </div>
-        `;
+          `;
 
 
-        this.label.ondragover = ev => {
-          ev.preventDefault();
-          ev.dataTransfer.dropEffect = "move";
-        };
+          this.label.ondragover = ev => {
+            ev.preventDefault();
+            ev.dataTransfer.dropEffect = "move";
+          };
 
-        this.label.ondrop = ev => {
-          ev.preventDefault();
-          if (ev.dataTransfer.files.length > 0) {
-            const file = ev.dataTransfer.files[0];
+          this.label.ondrop = ev => {
+            ev.preventDefault();
+            if (ev.dataTransfer.files.length > 0) {
+              const file = ev.dataTransfer.files[0];
+              this.loadFile(file);
+              this.dispatchCustomEvent(file);
+            };
+          };
+
+          this.input.onchange = ev => {
+            const file = ev.target.files[0];
             this.loadFile(file);
             this.dispatchCustomEvent(file);
           };
-        };
-
-        this.input.onchange = ev => {
-          const file = ev.target.files[0];
-          this.loadFile(file);
-          this.dispatchCustomEvent(file);
-        };
+        } catch (error) {
+          console.error("dropzone-complete failed to render with", { dzid, height, height, width });
+        }
       }
     }
     customElements.define('dropzone-complete', DropzoneComplete);
