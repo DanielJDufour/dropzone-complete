@@ -26,13 +26,9 @@ npm install dropzone-complete
 </script>
 ```
 
-## setting width
+## setting dimensions
 ```html
-<dropzone-complete width=500></dropzone-complete>
-```
-or
-```html
-<dropzone-complete width="100%"></dropzone-complete>
+<dropzone-complete height=400 width="100%"></dropzone-complete>
 ```
 
 # contact
