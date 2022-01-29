@@ -12,7 +12,8 @@
   "scripts": {
     "build": "npx babel src/index.js --out-file dist/dropzone-complete.js",
     "dev": "npx babel src/index.js --watch --out-file dist/dropzone-complete.js",
-    "serve": "npx http-server"
+    "serve": "npx http-server",
+    "test": "echo \"no automated tests\""
   },
   "repository": {
     "type": "git",

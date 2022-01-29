@@ -2,6 +2,11 @@
 /* global HTMLElement */
 
 (function() {
+
+    function endsWith(str, ending) {
+      return str.substring(str.length - ending.length, str.length) === ending;
+    }
+
     class DropzoneComplete extends HTMLElement {
       constructor() {
         // establish prototype chain
@@ -11,7 +16,7 @@
       }
 
       static get observedAttributes() {
-        return ['height', 'width'];
+        return ['file_type', 'height', 'width'];
       }
 
       // fires after the element has been attached to the DOM
@@ -67,7 +72,14 @@
 
       loadFile(file) {
         var reader = new FileReader();
-        if (file.type === "image/tiff") {
+
+        // check for file_type over-ride
+        let file_type = this.getAttribute("file_type");
+        if (!(typeof file_type === "string" && file_type.length > 0)) {
+          file_type = file.type;
+        }
+
+        if (file_type === "image/tiff") {
           reader.onloadend = () => {
             this.loadLibrary('georaster').then(() => {
               parseGeoraster(reader.result).then(georaster => {
@@ -81,11 +93,12 @@
             });
           }
           reader.readAsArrayBuffer(file);
-        } else if (file.type === "application/pdf") {
+        } else if (file_type === "application/pdf") {
           reader.onloadend = () =>  this.iframe.src = reader.result;
           this.wrapper.setAttribute("loaded", true);
           reader.readAsDataURL(file);
-        } else if (file.type === "text/plain") {
+        } else if (file_type === "text/plain" || (file.name && endsWith(file.name, "json"))) {
+          // in the future should probably map GeoJSON
           reader.onloadend = () => {
             this.textarea.value = reader.result;
             this.textarea.style.display = null;
