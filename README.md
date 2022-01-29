@@ -31,5 +31,12 @@ npm install dropzone-complete
 <dropzone-complete height=400 width="100%"></dropzone-complete>
 ```
 
+## over-riding file type
+If you want to treat your file like a certain file type regardless of extension,
+use the file_type attribute:
+```html
+<dropzone-complete file_type="text/plain"></dropzone-complete>
+```
+
 # contact
 Post an issue at https://github.com/danieljdufour/issues or email the package author at daniel.j.dufour@gmail.com
