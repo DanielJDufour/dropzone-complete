@@ -46,7 +46,21 @@
             script.src = url;
             script.onload = resolve;
             document.body.appendChild(script);
-          })
+          });
+        }
+        return Promise.resolve(this.promises[url]);
+      }
+
+      loadStyle(url) {
+        if (!this.promises[url]) {
+          this.promises[url] = new Promise(resolve => {
+            const style = document.createElement("link");
+            style.type = "text/css";
+            style.rel = "stylesheet";
+            style.href = url;
+            style.onload = resolve;
+            document.body.appendChild(style);
+          });
         }
         return Promise.resolve(this.promises[url]);
       }
@@ -93,6 +107,28 @@
             });
           }
           reader.readAsArrayBuffer(file);
+        } else if (file.name && endsWith(file.name.toLowerCase(), "geojson")) {
+          reader.onloadend = () => {
+            this.loadStyle("https://unpkg.com/leaflet/dist/leaflet.css").then(() => {
+              this.loadLibrary("leaflet").then(() => {
+                // initialize map
+                const map = L.map(this.dzid + "-map");
+
+                // add basemap
+                L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+                  attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+                }).addTo(map);
+
+                // add dropzone data
+                const data = JSON.parse(reader.result);
+                const lyr = L.geoJSON(data);
+                map.addLayer(lyr);
+                map.fitBounds(lyr.getBounds());
+                this.wrapper.setAttribute("loaded", true);
+              });
+            });
+          }
+          reader.readAsText(file);
         } else if (file_type === "application/pdf") {
           reader.onloadend = () =>  this.iframe.src = reader.result;
           this.wrapper.setAttribute("loaded", true);
@@ -115,7 +151,7 @@
       get style() {
         const { dzid } = this;
 
-        let height = this.getAttribute("height") ;
+        let height = this.getAttribute("height");
         if (height === null) height = 400;
         if (!isNaN(height)) height += "px";
 
@@ -203,6 +239,13 @@
           #${dzid}-iframe:not([src]) {
             display: none;
           }
+          #${dzid}-map {
+            display: none;
+            height: 100%;
+          }
+          #${dzid}-map.leaflet-container {
+            display: block;
+          }
         </style>`;
       }
   
@@ -225,6 +268,7 @@
                 <img id="${dzid}-img"/>
                 <canvas id="${dzid}-canvas" style="display: none"></canvas>
                 <iframe id="${dzid}-iframe"></iframe>
+                <div id="${dzid}-map"></div>
               </div>
             </div>
           `;
