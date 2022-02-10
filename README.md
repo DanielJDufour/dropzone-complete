@@ -1,5 +1,5 @@
 # dropzone-complete
-Dropzone Web Component Complete with Display of GeoTIFF, JPG, and PNG Files!
+Dropzone Web Component Complete with Display of GeoJSON, GeoTIFF, JPG, and PNG Files!
 
 ## demo
 https://dropzone-complete.netlify.app
