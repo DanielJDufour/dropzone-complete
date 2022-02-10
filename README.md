@@ -34,7 +34,7 @@ npm install dropzone-complete
 ### over-riding placeholder
 Set a placeholder attribute to over-ride the default HTML placeholder `"Click to Choose a File<br> or Drag One Here"`.
 ```html
-<dropzone-complete height=400 width="100%" placeholder="Drop your Document Here"></dropzone-complete>
+<dropzone-complete placeholder="Drop your Document Here"></dropzone-complete>
 ```
 
 ### over-riding file type
