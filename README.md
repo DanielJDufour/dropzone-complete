@@ -1,19 +1,19 @@
 # dropzone-complete
 Dropzone Web Component Complete with Display of GeoTIFF, JPG, and PNG Files!
 
-# demo
+## demo
 https://dropzone-complete.netlify.app
 
-# screenshots
+## screenshots
 <img src="https://github.com/DanielJDufour/dropzone-complete/blob/master/dropzone-complete.png?raw=true" width="200" style="display: inline-block">
 <img src="https://github.com/DanielJDufour/dropzone-complete/blob/master/dropzone-complete-loaded.png?raw=true" width="200" style="display: inline-block">
 
-# install
+## install
 ```bash
 npm install dropzone-complete
 ```
 
-# usage
+## usage
 ```html
 <script src="https://unpkg.com/dropzone-complete"></script>
 
@@ -26,17 +26,23 @@ npm install dropzone-complete
 </script>
 ```
 
-## setting dimensions
+### setting dimensions
 ```html
 <dropzone-complete height=400 width="100%"></dropzone-complete>
 ```
 
-## over-riding file type
+### over-riding placeholder
+Set a placeholder attribute to over-ride the default HTML placeholder `"Click to Choose a File<br> or Drag One Here"`.
+```html
+<dropzone-complete height=400 width="100%" placeholder="Drop your Document Here"></dropzone-complete>
+```
+
+### over-riding file type
 If you want to treat your file like a certain file type regardless of extension,
 use the file_type attribute:
 ```html
 <dropzone-complete file_type="text/plain"></dropzone-complete>
 ```
 
-# contact
+## contact
 Post an issue at https://github.com/danieljdufour/issues or email the package author at daniel.j.dufour@gmail.com
