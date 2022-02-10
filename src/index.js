@@ -16,7 +16,7 @@
       }
 
       static get observedAttributes() {
-        return ['file_type', 'height', 'width'];
+        return ['file_type', 'height', 'message', 'width'];
       }
 
       // fires after the element has been attached to the DOM
@@ -252,6 +252,9 @@
       render() {
         try {
           const { dzid } = this;
+
+          const message = this.getAttribute("message") || "Click to Choose a File<br/> or Drag One Here";
+
           this.innerHTML = `
             ${this.style}
             <div id="${dzid}-wrapper" loaded="false">
@@ -260,7 +263,7 @@
               <div id="${dzid}">
                 <div id="${dzid}-inner">
                   <div id="${dzid}-mssg">
-                    Click to Choose a File<br/> or Drag One Here
+                    ${message}
                   </div>
                 </div>
 
