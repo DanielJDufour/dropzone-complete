@@ -14,6 +14,9 @@
       document.querySelector("dropzone-complete").addEventListener("change", function(event) {
         console.log("DropZone Complete Loaded:", event);
       });
+      document.querySelector("dropzone-complete").addEventListener("dropzone:parse", function(event) {
+        console.log("DropZone Parsed:", event.detail);
+      });
     </script>
   </body>
 </html>

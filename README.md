@@ -44,5 +44,18 @@ use the file_type attribute:
 <dropzone-complete file_type="text/plain"></dropzone-complete>
 ```
 
+### using parsed data
+If you want to use the parsed JavaScript objects, listen to the parse event
+```html
+<script>
+    document.querySelector("dropzone-complete").addEventListener("dropzone:parse", function(event) {
+        console.log("DropZone Parsed a GeoJSON File:", event.detail.geojson);
+    });
+    document.querySelector("dropzone-complete").addEventListener("dropzone:parse", function(event) {
+        console.log("DropZone Parsed a GeoTIFF File:", event.detail.georaster);
+    });
+</script>
+```
+
 ## contact
 Post an issue at https://github.com/danieljdufour/issues or email the package author at daniel.j.dufour@gmail.com

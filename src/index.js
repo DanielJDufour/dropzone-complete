@@ -39,6 +39,13 @@
         }));
       }
 
+      dispatchCustomParseEvent(detail) {
+        this.dispatchEvent(new CustomEvent("dropzone:parse", {
+          bubbles: true,
+          detail
+        }));
+      }
+
       loadScript(url) {
         if (!this.promises[url]) {
           this.promises[url] = new Promise(resolve => {
@@ -97,6 +104,7 @@
           reader.onloadend = () => {
             this.loadLibrary('georaster').then(() => {
               parseGeoraster(reader.result).then(georaster => {
+                this.dispatchCustomParseEvent({ georaster });
                 const georasterCanvas = georaster.toCanvas();
                 this.canvas.height = georasterCanvas.height;
                 this.canvas.width = georasterCanvas.width;
@@ -121,6 +129,7 @@
 
                 // add dropzone data
                 const data = JSON.parse(reader.result);
+                this.dispatchCustomParseEvent({ geojson: data });
                 const lyr = L.geoJSON(data);
                 map.addLayer(lyr);
                 map.fitBounds(lyr.getBounds());
