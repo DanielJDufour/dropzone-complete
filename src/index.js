@@ -134,7 +134,8 @@
             ["shp", files.filter(f => f.name.toLowerCase().endsWith(".shp"))[0]],
             ["dbf", files.filter(f => f.name.toLowerCase().endsWith(".dbf"))[0]],
             ["prj", files.filter(f => f.name.toLowerCase().endsWith(".prj"))[0]],
-            ["cpg", files.filter(f => f.name.toLowerCase().endsWith(".cpg"))[0]]
+            ["cpg", files.filter(f => f.name.toLowerCase().endsWith(".cpg"))[0]],
+            ["zip", files.filter(f => f.name.toLowerCase().endsWith(".zip"))[0]]
           ]
           .filter(([ext, file]) => file !== undefined)
           .map(([ext, file]) => ([ext, readAsArrayBuffer(file)]));          
@@ -142,14 +143,17 @@
           var keys = subfiles.map(([ext, file]) => ext);
           var promises = subfiles.map(([ext, file]) => file);
           Promise.all(promises).then(arrayBuffers => {
-            var data = {};
-            for (let i = 0; i < arrayBuffers.length; i++) {
-              data[keys[i]] = arrayBuffers[i];
+            var data = null;
+            if (arrayBuffers.length === 1 && keys[0] === "zip") {
+              data = arrayBuffers[0];
+            } else {
+              data = {};
+              for (let i = 0; i < arrayBuffers.length; i++) {
+                data[keys[i]] = arrayBuffers[i];
+              }
             }
-            console.log({data});
             this.loadLibrary('shpjs@6.1.0/dist/shp.min.js').then(() => {
               shp(data).then(geojson => {
-                console.log({geojson});
                 this.loadStyle("https://unpkg.com/leaflet/dist/leaflet.css").then(() => {
                   this.loadLibrary("leaflet").then(() => {
                     // initialize map
@@ -161,7 +165,6 @@
                     }).addTo(map);
 
                     // add dropzone data
-                    this.dispatchCustomParseEvent({ geojson });
                     const lyr = L.geoJSON(geojson, {
                       onEachFeature: function (feature, layer) {
                         var popup = [];
@@ -178,6 +181,7 @@
                     });
                     map.addLayer(lyr);
                     map.fitBounds(lyr.getBounds());
+                    this.dispatchCustomParseEvent({ geojson, layer: lyr, map });
                     this.wrapper.setAttribute("loaded", true);
                   });
                 });
