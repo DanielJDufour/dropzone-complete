@@ -3,8 +3,24 @@
 
 (function() {
 
+    function toArray(items) {
+      var arr = [];
+      for (let i = 0; i < items.length; i++) arr.push(items[i]);
+      return arr;
+    }
+
     function endsWith(str, ending) {
       return str.substring(str.length - ending.length, str.length) === ending;
+    }
+
+    function readAsArrayBuffer(file) {
+      return new Promise(function (resolve, reject) {
+        var reader = new FileReader();
+        reader.onloadend = function () {
+          resolve(reader.result);
+        };
+        reader.readAsArrayBuffer(file);
+      });
     }
 
     class DropzoneComplete extends HTMLElement {
@@ -30,11 +46,14 @@
         }
       }
 
-      dispatchCustomEvent(file) {
+      dispatchCustomEvent(files) {
         this.dispatchEvent(new CustomEvent("change", {
           bubbles: true,
           detail: {
-            file
+            files,
+
+            // for legacy support
+            file: files[0],
           }
         }));
       }
@@ -91,16 +110,81 @@
       get wrapper() { return document.getElementById(this.dzid + "-wrapper"); }
 
 
-      loadFile(file) {
+      loadFiles(files) {
+        // convert files from FileList to an Array
+        files = toArray(files);
+
+        var file = files[0];
+        var file_count = files.length;
+
+        if (file_count === 0) return;
+
         var reader = new FileReader();
 
         // check for file_type over-ride
         let file_type = this.getAttribute("file_type");
-        if (!(typeof file_type === "string" && file_type.length > 0)) {
+        if (files.filter(f => f.name.toLowerCase().endsWith(".shp")).length === 1) {
+          file_type = "SHAPEFILE";
+        } else if (file_count === 1 && [undefined, null, ""].indexOf(file_type) > -1) {
           file_type = file.type;
         }
 
-        if (file_type === "image/tiff") {
+        if (file_type === "SHAPEFILE") {
+          var subfiles = [
+            ["shp", files.filter(f => f.name.toLowerCase().endsWith(".shp"))[0]],
+            ["dbf", files.filter(f => f.name.toLowerCase().endsWith(".dbf"))[0]],
+            ["prj", files.filter(f => f.name.toLowerCase().endsWith(".prj"))[0]],
+            ["cpg", files.filter(f => f.name.toLowerCase().endsWith(".cpg"))[0]]
+          ]
+          .filter(([ext, file]) => file !== undefined)
+          .map(([ext, file]) => ([ext, readAsArrayBuffer(file)]));          
+
+          var keys = subfiles.map(([ext, file]) => ext);
+          var promises = subfiles.map(([ext, file]) => file);
+          Promise.all(promises).then(arrayBuffers => {
+            var data = {};
+            for (let i = 0; i < arrayBuffers.length; i++) {
+              data[keys[i]] = arrayBuffers[i];
+            }
+            console.log({data});
+            this.loadLibrary('shpjs@6.1.0/dist/shp.min.js').then(() => {
+              shp(data).then(geojson => {
+                console.log({geojson});
+                this.loadStyle("https://unpkg.com/leaflet/dist/leaflet.css").then(() => {
+                  this.loadLibrary("leaflet").then(() => {
+                    // initialize map
+                    const map = L.map(this.dzid + "-map");
+    
+                    // add basemap
+                    L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+                      attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+                    }).addTo(map);
+
+                    // add dropzone data
+                    this.dispatchCustomParseEvent({ geojson });
+                    const lyr = L.geoJSON(geojson, {
+                      onEachFeature: function (feature, layer) {
+                        var popup = [];
+                        for (let key in feature.properties) {
+                          popup.push(key + " = " + JSON.stringify(feature.properties[key]));
+                        }
+                        popup = popup.join("<br/>");
+                        popup = popup.trim();
+                        if (popup === "") popup = "No Properties Found";
+                        layer.bindPopup(popup, {
+                          maxHeight: 250
+                        });
+                      }
+                    });
+                    map.addLayer(lyr);
+                    map.fitBounds(lyr.getBounds());
+                    this.wrapper.setAttribute("loaded", true);
+                  });
+                });
+              });
+            });
+          });
+        } else if (file_type === "image/tiff") {
           reader.onloadend = () => {
             this.loadLibrary('georaster').then(() => {
               parseGeoraster(reader.result).then(georaster => {
@@ -130,7 +214,20 @@
                 // add dropzone data
                 const data = JSON.parse(reader.result);
                 this.dispatchCustomParseEvent({ geojson: data });
-                const lyr = L.geoJSON(data);
+                const lyr = L.geoJSON(data, {
+                  onEachFeature: function (feature, layer) {
+                    var popup = [];
+                    for (let key in feature.properties) {
+                      popup.push(key + " = " + JSON.stringify(feature.properties[key]));
+                    }
+                    popup = popup.join("<br/>");
+                    popup = popup.trim();
+                    if (popup === "") popup = "No Properties Found";
+                    layer.bindPopup(popup, {
+                      maxHeight: 250
+                    });
+                  }
+                });
                 map.addLayer(lyr);
                 map.fitBounds(lyr.getBounds());
                 this.wrapper.setAttribute("loaded", true);
@@ -142,8 +239,9 @@
           reader.onloadend = () =>  this.iframe.src = reader.result;
           this.wrapper.setAttribute("loaded", true);
           reader.readAsDataURL(file);
-        } else if (file_type === "text/plain" || (file.name && endsWith(file.name, "json"))) {
+        } else if (file_type === "text/plain" || (file.name.toLowerCase().endsWith(".py")) || (file.name && endsWith(file.name, "json"))) {
           // in the future should probably map GeoJSON
+          // probably add syntax highlighting for code
           reader.onloadend = () => {
             this.textarea.value = reader.result;
             this.textarea.style.display = null;
@@ -294,16 +392,16 @@
           this.label.ondrop = ev => {
             ev.preventDefault();
             if (ev.dataTransfer.files.length > 0) {
-              const file = ev.dataTransfer.files[0];
-              this.loadFile(file);
-              this.dispatchCustomEvent(file);
+              const files = ev.dataTransfer.files;
+              this.loadFiles(files);
+              this.dispatchCustomEvent(files);
             };
           };
 
           this.input.onchange = ev => {
-            const file = ev.target.files[0];
-            this.loadFile(file);
-            this.dispatchCustomEvent(file);
+            const files = ev.target.files;
+            this.loadFiles(files);
+            this.dispatchCustomEvent(files);
           };
         } catch (error) {
           console.error("dropzone-complete failed to render with", { dzid, height, height, width });
