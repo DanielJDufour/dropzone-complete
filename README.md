@@ -1,5 +1,5 @@
 # dropzone-complete
-Dropzone Web Component Complete with Display of GeoJSON, GeoTIFF, JPG, and PNG Files!
+Dropzone Web Component Complete with Display of GeoJSON, GeoTIFF, JPG, PNG, and Shapefiles!
 
 ## demo
 https://dropzone-complete.netlify.app
@@ -22,6 +22,9 @@ npm install dropzone-complete
 <script>
     document.querySelector("dropzone-complete").addEventListener("change", function(event) {
         console.log("DropZone Complete loaded file:", event.detail.file);
+
+        // if the file includes multiple subfiles like a Shapefile
+        console.log("DropZone Complete loaded files:", event.detail.files);
     });
 </script>
 ```

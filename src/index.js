@@ -124,12 +124,12 @@
         // check for file_type over-ride
         let file_type = this.getAttribute("file_type");
         if (files.filter(f => f.name.toLowerCase().endsWith(".shp")).length === 1) {
-          file_type = "SHAPEFILE";
+          file_type = "x-gis/x-shapefile";
         } else if (file_count === 1 && [undefined, null, ""].indexOf(file_type) > -1) {
           file_type = file.type;
         }
 
-        if (file_type === "SHAPEFILE") {
+        if (file_type === "x-gis/x-shapefile") {
           var subfiles = [
             ["shp", files.filter(f => f.name.toLowerCase().endsWith(".shp"))[0]],
             ["dbf", files.filter(f => f.name.toLowerCase().endsWith(".dbf"))[0]],
