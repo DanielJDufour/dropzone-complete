@@ -32,7 +32,7 @@
       }
 
       static get observedAttributes() {
-        return ['file_type', 'height', 'placeholder', 'width'];
+        return ['basemap_url', 'basemap_attribution', 'file_type', 'height', 'placeholder', 'width'];
       }
 
       // fires after the element has been attached to the DOM
@@ -95,6 +95,10 @@
         return this.loadScript(`https://unpkg.com/${name}`);
       }
 
+      // loadLibraries(names) {
+      //   return Promise.all(names.map(name => this.loadLibrary(name)))
+      // }
+
       get canvas() { return this.querySelector("canvas"); }
 
       get iframe() { return this.querySelector("iframe"); }
@@ -141,6 +145,7 @@
           .map(([ext, file]) => ([ext, readAsArrayBuffer(file)]));          
 
           var keys = subfiles.map(([ext, file]) => ext);
+          // console.log("keys:", keys);
           var promises = subfiles.map(([ext, file]) => file);
           Promise.all(promises).then(arrayBuffers => {
             var data = null;
@@ -152,38 +157,53 @@
                 data[keys[i]] = arrayBuffers[i];
               }
             }
+
+            // console.log("data:", data);
+            // if (data.prj) console.log("prj is:", (new TextDecoder()).decode(data.prj));
+
             this.loadLibrary('shpjs@6.1.0/dist/shp.min.js').then(() => {
               shp(data).then(geojson => {
-                this.loadStyle("https://unpkg.com/leaflet/dist/leaflet.css").then(() => {
-                  this.loadLibrary("leaflet").then(() => {
-                    // initialize map
-                    const map = L.map(this.dzid + "-map");
-    
-                    // add basemap
-                    L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
-                      attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-                    }).addTo(map);
-
-                    // add dropzone data
-                    const lyr = L.geoJSON(geojson, {
-                      onEachFeature: function (feature, layer) {
-                        var popup = [];
-                        for (let key in feature.properties) {
-                          popup.push(key + " = " + JSON.stringify(feature.properties[key]));
-                        }
-                        popup = popup.join("<br/>");
-                        popup = popup.trim();
-                        if (popup === "") popup = "No Properties Found";
-                        layer.bindPopup(popup, {
-                          maxHeight: 250
-                        });
+                this.loadLibrary("geojson-vt").then(() => {
+                  // var tileIndex = geojsonvt(geojson);
+                  this.loadStyle("https://unpkg.com/leaflet/dist/leaflet.css").then(() => {
+                    this.loadLibrary("leaflet").then(() => {
+                      // initialize map
+                      const map = L.map(this.dzid + "-map");
+      
+                      // add basemap
+                      const basemap_url = this.getAttribute("basemap_url");
+                      const basemap_attribution = this.getAttribute("basemap_attribution");
+                      if (basemap_url) {
+                        L.tileLayer(basemap_url, {
+                          attribution: basemap_attribution || '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+                        }).addTo(map);
+                      } else {
+                        L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+                          attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+                        }).addTo(map);
                       }
+
+                      // add dropzone data
+                      const lyr = L.geoJSON(geojson, {
+                        onEachFeature: function (feature, layer) {
+                          var popup = [];
+                          for (let key in feature.properties) {
+                            popup.push(key + " = " + JSON.stringify(feature.properties[key]));
+                          }
+                          popup = popup.join("<br/>");
+                          popup = popup.trim();
+                          if (popup === "") popup = "No Properties Found";
+                          layer.bindPopup(popup, {
+                            maxHeight: 250
+                          });
+                        }
+                      });
+                      map.addLayer(lyr);
+                      map.fitBounds(lyr.getBounds());
+                      this.dispatchCustomParseEvent({ geojson, layer: lyr, map });
+                      this.wrapper.setAttribute("loaded", true);
                     });
-                    map.addLayer(lyr);
-                    map.fitBounds(lyr.getBounds());
-                    this.dispatchCustomParseEvent({ geojson, layer: lyr, map });
-                    this.wrapper.setAttribute("loaded", true);
-                  });
+                  });  
                 });
               });
             });
@@ -211,9 +231,17 @@
                 const map = L.map(this.dzid + "-map");
 
                 // add basemap
-                L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
-                  attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-                }).addTo(map);
+                const basemap_url = this.getAttribute("basemap_url");
+                const basemap_attribution = this.getAttribute("basemap_attribution");
+                if (basemap_url) {
+                  L.tileLayer(basemap_url, {
+                    attribution: basemap_attribution || '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+                  }).addTo(map);
+                } else {
+                  L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+                  }).addTo(map);
+                }
 
                 // add dropzone data
                 const data = JSON.parse(reader.result);
