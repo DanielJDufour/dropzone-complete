@@ -32,7 +32,7 @@
       }
 
       static get observedAttributes() {
-        return ['basemap_url', 'basemap_attribution', 'file_type', 'height', 'placeholder', 'width'];
+        return ['basemap_url', 'basemap_type', 'basemap_attribution', 'file_type', 'height', 'placeholder', 'width'];
       }
 
       // fires after the element has been attached to the DOM
@@ -172,8 +172,14 @@
       
                       // add basemap
                       const basemap_url = this.getAttribute("basemap_url");
+                      const basemap_type = this.getAttribute("basemap_type");
                       const basemap_attribution = this.getAttribute("basemap_attribution");
-                      if (basemap_url) {
+                      if (basemap_type === "pmtiles" && basemap_url) {
+                        this.loadLibrary("protomaps-leaflet@5.0.0/dist/protomaps-leaflet.js").then(() => {
+                          var layer = protomapsL.leafletLayer({ url: basemap_url, flavor: 'light', lang: 'en' })
+                          layer.addTo(map);
+                        });
+                      } else if (basemap_url) {
                         L.tileLayer(basemap_url, {
                           attribution: basemap_attribution || '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                         }).addTo(map);
@@ -198,6 +204,10 @@
                           });
                         }
                       });
+
+                      const max_zoom = this.getAttribute("max_zoom");
+                      if (max_zoom) map.setMaxZoom(max_zoom);
+
                       map.addLayer(lyr);
                       map.fitBounds(lyr.getBounds());
                       this.dispatchCustomParseEvent({ geojson, layer: lyr, map });
